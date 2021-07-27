@@ -18,6 +18,6 @@ setup(
     keywords = "ssh tunnel database mysql mongodb",
     url = "https://github.com/ADCLab/remoteDBconnector",
     packages=['remoteDBconnector', 'tests'],
-    install_requires=['sshtunnel', 'configparser', 'pymysql'], #external packages as dependencies
+    install_requires=['sshtunnel', 'configparser', 'pymysql','pymongo'], #external packages as dependencies
     long_description=read('README.md'),
 )

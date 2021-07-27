@@ -1,26 +1,34 @@
 from sshtunnel import SSHTunnelForwarder
-from os.path import isfile
 from configparser import ConfigParser
 from pymysql import connect
+from pymongo import MongoClient
 
-
-class remoteDBconnector(object):
+class dbconn(object):
     def __init__(self,configFile=None):
         if configFile is not None:
-            config = ConfigParser(configFile)
+            config = ConfigParser(allow_no_value=True)
+            config.read(configFile)
+
             if config['tunnel']['use']:
                 self.createTunnel(config['tunnel']['remoteAddress'], 
                                   config['tunnel']['remoteUser'],
                                   config['tunnel']['remotePassword'],
-                                  config['tunnel']['localPort'],
-                                  config['tunnel']['remotePort'])
+                                  int(config['tunnel']['localPort']),
+                                  int(config['tunnel']['remotePort']))
             if config['DB']['type']=='mysql':
                 self.createSQL(config['DB']['hostAddress'],
-                               config['DB']['hostPort'],
-                               config['DB']['schema'],
+                               int(config['DB']['hostPort']),
+                               config['DB']['db'],
                                config['DB']['username'],
                                config['DB']['password'],
                                )
+            elif config['DB']['type']=='mongo':
+                self.createMongo(config['DB']['hostAddress'],
+                               int(config['DB']['hostPort']),
+                               config['DB']['db'],
+                               config['DB']['username'],
+                               config['DB']['password'],
+                               )                
             
         
         
@@ -35,18 +43,38 @@ class remoteDBconnector(object):
             self.tunnel.start()
             return True
         except:
-            print('Tunnel is already running.')
+            print('Check if a tunnel is already running.')
+            print('Check for internet access.')
+            print('Check VPN status.')
             return -1
-                
-
-    def closeTunnel(self): 
-        self.tunnel.close()
-    
-    
-    def createSQL(self, hostAddress='127.0.0.1',hostPort=3306,schema=None,username=None,password=None):
-        self.conn= connect(user=username,
+                    
+    def createSQL(self, hostAddress='127.0.0.1',hostPort=3306,db=None,username=None,password=None):
+        self.conn = connect(user=username,
                            password=password,
                            host=hostAddress,
-                           db=schema,
+                           db=db,
                            port=hostPort)
+
+    def createMongo(self, hostAddress='127.0.0.1',hostPort=27017,db='Admin',username=None,password=None):
+        self.conn = MongoClient(host=hostAddress,
+                                              authSource=db,
+                                              port=hostPort,
+                                              username=username,
+                                              password=password,
+                                              authMechanism='SCRAM-SHA-256')
         
+    def closeTunnel(self): 
+        if hasattr(self,'tunnel') and  self.tunnel.is_active:
+            self.tunnel.close()
+
+    def closeDB(self): 
+        if hasattr(self,'conn') and self.conn.open:
+            self.conn.close()
+
+    def closeAll(self): 
+        self.closeDB()
+        self.closeTunnel()
+        
+    def __del__(self):
+        self.closeAll()
+        print("deleted")
