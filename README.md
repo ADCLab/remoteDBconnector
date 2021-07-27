@@ -3,14 +3,14 @@
 
 ## Installing (for usage)
 ```
-git clone git@github.com:ADCLab/getweather.git
-pip3 install getweather/
+git clone git@github.com:ADCLab/remoteDBconnector.git
+pip3 install remoteDBconnector/
 ```
 
 ## Installing (for development)
 ```
-git clone git@github.com:ADCLab/getweather.git
-pip3 install -e getweather/
+git clone git@github.com:ADCLab/remoteDBconnector.git
+pip3 install -e remoteDBconnector/
 ```
 
 ## Error when installing
