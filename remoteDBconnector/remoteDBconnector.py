@@ -9,7 +9,7 @@ class dbconn(object):
             config = ConfigParser(allow_no_value=True)
             config.read(configFile)
 
-            if config['tunnel']['use']:
+            if bool(config['tunnel']['use'])==True:
                 self.createTunnel(config['tunnel']['remoteAddress'], 
                                   config['tunnel']['remoteUser'],
                                   config['tunnel']['remotePassword'],
